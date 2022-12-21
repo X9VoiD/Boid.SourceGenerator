@@ -43,12 +43,9 @@ public class IncrementalRun
 
     internal IncrementalRun UpdateRun(TestState testState)
     {
-        // var newDriver = Driver.WithUpdatedParseOptions(CSharpParseOptions.Default.WithLanguageVersion(testState.LanguageVersion))
-        //     .WithUpdatedAnalyzerConfigOptions(new AnalyzerConfigOptionsProvider(testState.AnalyzerConfigOptions, testState.AnalyzerConfigOptionsFactory))
-        //     .AddAdditionalTexts(testState.AdditionalText.Select(text =>
-        //         (Microsoft.CodeAnalysis.AdditionalText)new AdditionalText(text.HintPath, text.Content)).ToImmutableArray());
-
-        // return new IncrementalRun(_verifier, testState, PreGeneratorCompilation, newDriver);
+        // TODO: update incremental compilation
+        // TODO: update additional texts
+        // TODO: update analyzer config options
 
         throw new NotImplementedException();
     }
