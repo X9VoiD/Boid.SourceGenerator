@@ -10,17 +10,24 @@ public sealed class IncrementalRun
     internal int RunNumber { get; }
     internal IVerifier Verifier { get; }
     internal TestState TestState { get; }
+    internal ImmutableArray<AdditionalText> AdditionalTexts { get; }
     internal IncrementalCompilation PreGeneratorCompilation { get; }
     internal GeneratorDriver Driver { get; }
-    internal ImmutableArray<AdditionalText> AdditionalTexts { get; }
+    internal ImmutableArray<IIncrementalRunObserver> Observers { get; }
 
-    internal IncrementalRun(IVerifier verifier, IIncrementalGenerator sourceGen, TestState testState, ImmutableArray<MetadataReference> references)
+    internal IncrementalRun(
+        IVerifier verifier,
+        IIncrementalGenerator sourceGen,
+        TestState testState,
+        ImmutableArray<MetadataReference> references,
+        ImmutableArray<IIncrementalRunObserver> observers)
     {
         Verifier = verifier;
-        AdditionalTexts = CreateAdditionalTexts(testState);
         TestState = testState;
         PreGeneratorCompilation = CreateCompilation(testState, references);
+        AdditionalTexts = CreateAdditionalTexts(testState);
         Driver = CreateDriver(sourceGen, testState, AdditionalTexts);
+        Observers = observers;
     }
 
     private IncrementalRun(
@@ -29,18 +36,21 @@ public sealed class IncrementalRun
         TestState testState,
         IncrementalCompilation preGeneratorCompilation,
         GeneratorDriver driver,
-        ImmutableArray<AdditionalText> additionalTexts)
+        ImmutableArray<AdditionalText> additionalTexts,
+        ImmutableArray<IIncrementalRunObserver> observers)
     {
         RunNumber = runNumber;
         Verifier = verifier;
-        AdditionalTexts = additionalTexts;
         TestState = testState;
         PreGeneratorCompilation = preGeneratorCompilation;
         Driver = driver;
+        AdditionalTexts = additionalTexts;
+        Observers = observers;
     }
 
     internal IncrementalRun RunGenerator()
     {
+        Observers.ForEach(o => o.OnRunStart(RunNumber));
         var newDriver = Driver.RunGeneratorsAndUpdateCompilation(PreGeneratorCompilation.Compilation, out var outputCompilation, out var diagnostics);
 
         var runResult = newDriver.GetRunResult();
@@ -52,9 +62,10 @@ public sealed class IncrementalRun
         verifier.VerifyGeneratedSources(TestState, runResult);
         verifier.VerifyZeroDiagnostics(TestState, generatorDiagnostics, "generator", TestBehaviour.SkipGeneratorDiagnostic);
         verifier.VerifyZeroDiagnostics(TestState, compilationDiagnostics, "compilation", TestBehaviour.SkipCompilationDiagnostic);
+        Observers.ForEach(o => o.OnRunEnd(RunNumber));
 
         // Pass the original verifier
-        return new IncrementalRun(RunNumber, Verifier, TestState, PreGeneratorCompilation, newDriver, AdditionalTexts);
+        return new IncrementalRun(RunNumber, Verifier, TestState, PreGeneratorCompilation, newDriver, AdditionalTexts, Observers);
     }
 
     internal IncrementalRun ApplyIncrementalChange(TestState newState)
@@ -87,7 +98,7 @@ public sealed class IncrementalRun
         }
 
         // Increment run number and pass updated run state
-        return new IncrementalRun(RunNumber + 1, Verifier, newState, newCompilation, newDriver, newAdditionalTexts);
+        return new IncrementalRun(RunNumber + 1, Verifier, newState, newCompilation, newDriver, newAdditionalTexts, Observers);
     }
 
     private static IncrementalCompilation CreateCompilation(TestState testState, ImmutableArray<MetadataReference> references)

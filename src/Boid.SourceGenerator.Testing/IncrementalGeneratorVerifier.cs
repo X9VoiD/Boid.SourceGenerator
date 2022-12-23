@@ -14,6 +14,7 @@ public partial class IncrementalGeneratorVerifier<TSourceGenerator, TVerifier>
     public TestState TestState { get; set; } = new();
 
     public ImmutableArray<MetadataReference> AdditionalReferences { get; init; } = ImmutableArray<MetadataReference>.Empty;
+    public ImmutableArray<IIncrementalRunObserver> Observers { get; init; } = ImmutableArray<IIncrementalRunObserver>.Empty;
 
     public Task RunAsync()
     {
@@ -43,7 +44,7 @@ public partial class IncrementalGeneratorVerifier<TSourceGenerator, TVerifier>
 
     public Task<IncrementalRun> RunIncrementalAsync(IncrementalRun? incrementalRun = null)
     {
-        incrementalRun ??= new IncrementalRun(_verifier, new TSourceGenerator(), TestState, AdditionalReferences);
+        incrementalRun ??= new IncrementalRun(_verifier, new TSourceGenerator(), TestState, AdditionalReferences, Observers);
         return Task.Run(() => incrementalRun.RunGenerator());
     }
 
