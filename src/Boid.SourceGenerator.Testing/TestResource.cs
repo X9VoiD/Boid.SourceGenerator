@@ -5,6 +5,8 @@ namespace Boid.SourceGenerator.Testing;
 public class TestResource
 {
     public static string ProjectDir { get; set; } = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
+    public static string TestResourcesRelativeDir { get; set; } = "TestResources";
+    public static string TestResourcesDir { get; } = Path.Combine(ProjectDir, TestResourcesRelativeDir);
 
     public string Name { get; }
 
@@ -29,7 +31,7 @@ public class TestResource
 
     public static ImmutableArray<TestResource> GetTestResources()
     {
-        var testResourcesDir = Path.Combine(ProjectDir, "TestResources");
+        var testResourcesDir = TestResourcesDir;
         if (!Directory.Exists(testResourcesDir))
             throw new DirectoryNotFoundException($"Test resources directory not found: {testResourcesDir}");
 
@@ -40,7 +42,7 @@ public class TestResource
 
     public static TestResource GetTestResource(string name)
     {
-        var resourceDir = Path.Combine(ProjectDir, "TestResources", name);
+        var resourceDir = Path.Combine(TestResourcesDir, name);
         if (!Directory.Exists(resourceDir))
             throw new DirectoryNotFoundException($"Test resource directory not found: {resourceDir}");
 
