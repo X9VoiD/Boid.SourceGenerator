@@ -5,27 +5,41 @@ using Microsoft.CodeAnalysis.Testing;
 
 namespace Boid.SourceGenerator.Testing;
 
-public class IncrementalRun
+public sealed class IncrementalRun
 {
-    private readonly IVerifier _verifier;
+    internal int RunNumber { get; }
+    internal IVerifier Verifier { get; }
     internal TestState TestState { get; }
     internal IncrementalCompilation PreGeneratorCompilation { get; }
     internal GeneratorDriver Driver { get; }
+    internal ImmutableArray<AdditionalText> AdditionalTexts { get; }
 
-    internal IncrementalRun(IVerifier verifier, IIncrementalGenerator sourceGen, TestState testState)
-        : this(verifier, testState, CreateCompilation(testState), CreateDriver(sourceGen, testState))
+    internal IncrementalRun(IVerifier verifier, IIncrementalGenerator sourceGen, TestState testState, ImmutableArray<MetadataReference> references)
     {
+        Verifier = verifier;
+        AdditionalTexts = CreateAdditionalTexts(testState);
+        TestState = testState;
+        PreGeneratorCompilation = CreateCompilation(testState, references);
+        Driver = CreateDriver(sourceGen, testState, AdditionalTexts);
     }
 
-    private IncrementalRun(IVerifier verifier, TestState testState, IncrementalCompilation preGeneratorCompilation, GeneratorDriver driver)
+    private IncrementalRun(
+        int runNumber,
+        IVerifier verifier,
+        TestState testState,
+        IncrementalCompilation preGeneratorCompilation,
+        GeneratorDriver driver,
+        ImmutableArray<AdditionalText> additionalTexts)
     {
-        _verifier = verifier;
+        RunNumber = runNumber;
+        Verifier = verifier;
+        AdditionalTexts = additionalTexts;
         TestState = testState;
         PreGeneratorCompilation = preGeneratorCompilation;
         Driver = driver;
     }
 
-    public IncrementalRun RunGenerator()
+    internal IncrementalRun RunGenerator()
     {
         var newDriver = Driver.RunGeneratorsAndUpdateCompilation(PreGeneratorCompilation.Compilation, out var outputCompilation, out var diagnostics);
 
@@ -33,26 +47,52 @@ public class IncrementalRun
         var generatorDiagnostics = runResult.Results.SelectMany(r => r.Diagnostics);
         var compilationDiagnostics = outputCompilation.GetDiagnostics();
 
-        _verifier.VerifyGeneratedSources(TestState, runResult);
-        _verifier.VerifyZeroDiagnostics(TestState, generatorDiagnostics, "generator", TestBehaviour.SkipGeneratorDiagnostic);
-        _verifier.VerifyZeroDiagnostics(TestState, compilationDiagnostics, "compilation", TestBehaviour.SkipCompilationDiagnostic);
+        // Create a new verifier with a new context for each run
+        var verifier = Verifier.PushContext($"Run {RunNumber}");
+        verifier.VerifyGeneratedSources(TestState, runResult);
+        verifier.VerifyZeroDiagnostics(TestState, generatorDiagnostics, "generator", TestBehaviour.SkipGeneratorDiagnostic);
+        verifier.VerifyZeroDiagnostics(TestState, compilationDiagnostics, "compilation", TestBehaviour.SkipCompilationDiagnostic);
 
-        // return a new run with the updated driver
-        return new IncrementalRun(_verifier, TestState, PreGeneratorCompilation, newDriver);
+        // Pass the original verifier
+        return new IncrementalRun(RunNumber, Verifier, TestState, PreGeneratorCompilation, newDriver, AdditionalTexts);
     }
 
-    internal IncrementalRun UpdateRun(TestState testState)
+    internal IncrementalRun ApplyIncrementalChange(TestState newState)
     {
-        // TODO: update incremental compilation
-        // TODO: update additional texts
-        // TODO: update analyzer config options
+        var oldState = TestState;
+        var newCompilation = PreGeneratorCompilation;
 
-        throw new NotImplementedException();
+        var oldSources = oldState.Sources.Select(a => a.HintPath).ToHashSet();
+        var newSources = newState.Sources.Select(a => a.HintPath).ToHashSet();
+
+        // Remove sources from previous state that are not in new state
+        foreach (var source in oldSources.Where(old => !newSources.Contains(old)))
+        {
+            newCompilation = newCompilation.RemoveSource(source);
+        }
+
+        // Add or update sources for the new state
+        foreach (var (hintPath, content) in newState.Sources)
+        {
+            newCompilation = newCompilation.SetSource(hintPath, content);
+        }
+
+        var newAdditionalTexts = CreateAdditionalTexts(newState);
+        var newDriver = Driver.ReplaceAdditionalTexts(newAdditionalTexts.CastArray<Microsoft.CodeAnalysis.AdditionalText>());
+
+        // Check if analyzer config options have changed
+        if (!oldState.AnalyzerConfigOptions.SequenceEqual(newState.AnalyzerConfigOptions))
+        {
+            newDriver = newDriver.WithUpdatedAnalyzerConfigOptions(new AnalyzerConfigOptionsProvider(newState.AnalyzerConfigOptions, newState.AnalyzerConfigOptionsFactory));
+        }
+
+        // Increment run number and pass updated run state
+        return new IncrementalRun(RunNumber + 1, Verifier, newState, newCompilation, newDriver, newAdditionalTexts);
     }
 
-    private static IncrementalCompilation CreateCompilation(TestState testState)
+    private static IncrementalCompilation CreateCompilation(TestState testState, ImmutableArray<MetadataReference> references)
     {
-        var incrementalCompilation = new IncrementalCompilation();
+        var incrementalCompilation = new IncrementalCompilation(references);
 
         foreach (var sourceFile in testState.Sources)
         {
@@ -62,14 +102,19 @@ public class IncrementalRun
         return incrementalCompilation;
     }
 
-    private static GeneratorDriver CreateDriver(IIncrementalGenerator sourceGen, TestState testState)
+    private static GeneratorDriver CreateDriver(IIncrementalGenerator sourceGen, TestState testState, ImmutableArray<AdditionalText> additionalTexts)
     {
         var driver = CSharpGeneratorDriver.Create(sourceGen)
             .WithUpdatedParseOptions(CSharpParseOptions.Default.WithLanguageVersion(testState.LanguageVersion))
             .WithUpdatedAnalyzerConfigOptions(new AnalyzerConfigOptionsProvider(testState.AnalyzerConfigOptions, testState.AnalyzerConfigOptionsFactory))
-            .AddAdditionalTexts(testState.AdditionalText.Select(text =>
-                (Microsoft.CodeAnalysis.AdditionalText)new AdditionalText(text.HintPath, text.Content)).ToImmutableArray());
+            .AddAdditionalTexts(additionalTexts.CastArray<Microsoft.CodeAnalysis.AdditionalText>());
 
         return driver;
+    }
+
+    private static ImmutableArray<AdditionalText> CreateAdditionalTexts(TestState testState)
+    {
+        return testState.AdditionalText
+            .Select(text => new AdditionalText(text.HintPath, text.Content)).ToImmutableArray();
     }
 }
