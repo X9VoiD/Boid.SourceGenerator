@@ -10,10 +10,10 @@ internal class IncrementalCompilation
 
     public Compilation Compilation { get; }
 
-    public IncrementalCompilation()
+    public IncrementalCompilation(ImmutableArray<MetadataReference> references)
     {
         Compilation = CSharpCompilation.Create("test",
-            references: new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+            references: references.Append(MetadataReference.CreateFromFile(typeof(object).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 

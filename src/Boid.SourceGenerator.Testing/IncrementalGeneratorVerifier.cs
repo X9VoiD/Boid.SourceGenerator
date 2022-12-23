@@ -43,7 +43,7 @@ public partial class IncrementalGeneratorVerifier<TSourceGenerator, TVerifier>
 
     public Task<IncrementalRun> RunIncrementalAsync(IncrementalRun? incrementalRun = null)
     {
-        incrementalRun ??= new IncrementalRun(_verifier, new TSourceGenerator(), TestState);
+        incrementalRun ??= new IncrementalRun(_verifier, new TSourceGenerator(), TestState, AdditionalReferences);
         return Task.Run(() => incrementalRun.RunGenerator());
     }
 
@@ -53,9 +53,9 @@ public partial class IncrementalGeneratorVerifier<TSourceGenerator, TVerifier>
 
         IncrementalRun? incrementalRun = null;
 
-        foreach (var phase in incrementalStates)
+        foreach (var state in incrementalStates)
         {
-            incrementalRun = await RunIncrementalAsync(incrementalRun?.UpdateRun(phase));
+            incrementalRun = await RunIncrementalAsync(incrementalRun?.ApplyIncrementalChange(state));
         }
     }
 
