@@ -23,3 +23,6 @@ BenchmarkDotNet.Artifacts/
 # Nix
 .envrc
 shell.nix
+
+# Keep folders
+!*.gitkeep
