@@ -18,6 +18,35 @@ public record TestState
     /// </summary>
     public Func<string, string?>? AnalyzerConfigOptionsFactory { get; init; }
 
+    public TestState()
+    {
+    }
+
+    public TestState(TestResource resource)
+    {
+        ArgumentNullException.ThrowIfNull(resource);
+
+        if (resource.IsEmpty)
+            throw new ArgumentException("Cannot create TestState from empty TestResource.", nameof(resource));
+
+        Sources = resource.Sources;
+        Generated = resource.Generated;
+        AdditionalText = resource.AdditionalText;
+        AnalyzerConfigOptions = resource.AnalyzerConfigOptions;
+    }
+
+    public TestState(string resourceName) : this(TestResource.GetTestResource(resourceName))
+    {
+    }
+
+    public TestState WithTestResource(TestResource testResource)
+        => new(testResource)
+        {
+            LanguageVersion = LanguageVersion,
+            TestBehaviour = TestBehaviour,
+            AnalyzerConfigOptionsFactory = AnalyzerConfigOptionsFactory,
+        };
+
     public TestState WithLanguageVersion(LanguageVersion languageVersion)
         => this with { LanguageVersion = languageVersion };
 
@@ -71,20 +100,4 @@ public record TestState
 
     public TestState AddAnalyzerConfigOptions(params AnalyzerConfigOptionsFile[] analyzerConfigOptions)
         => this with { AnalyzerConfigOptions = AnalyzerConfigOptions.AddRange(analyzerConfigOptions) };
-
-    public static TestState FromResource(TestResource resource)
-    {
-        ArgumentNullException.ThrowIfNull(resource);
-
-        if (resource.IsEmpty)
-            throw new ArgumentException("Cannot create TestState from empty TestResource.", nameof(resource));
-
-        return new TestState
-        {
-            Sources = resource.Sources,
-            Generated = resource.Generated,
-            AdditionalText = resource.AdditionalText,
-            AnalyzerConfigOptions = resource.AnalyzerConfigOptions,
-        };
-    }
 }

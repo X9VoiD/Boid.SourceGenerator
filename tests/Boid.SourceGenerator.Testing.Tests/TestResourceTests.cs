@@ -61,12 +61,12 @@ public class TestResourceTests
     [Fact]
     public void GetTestResource_Returns_TestResource()
     {
-        var testResource = TestResource.GetTestResource("A");
+        var testResource = TestResource.GetTestResource("EmptyClass");
 
-        Assert.Equal("A", testResource.Name);
+        Assert.Equal("EmptyClass", testResource.Name);
         Assert.Single(testResource.Sources);
-        Assert.Equal("A.cs", testResource.Sources[0].HintPath);
-        Assert.Equal("public class A { }", testResource.Sources[0].Content);
+        Assert.Equal("EmptyClass.cs", testResource.Sources[0].HintPath);
+        Assert.Equal("public class EmptyClass { }", testResource.Sources[0].Content);
     }
 
     [Fact]
