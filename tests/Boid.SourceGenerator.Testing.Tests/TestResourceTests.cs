@@ -23,20 +23,26 @@ public class TestResourceTests
     [Fact]
     public void TestResourcesDir_Returns_ProjectDirAndTestResourcesRelativeDir()
     {
-        TestResource.ProjectDir = "/example/project";
-        TestResource.TestResourcesRelativeDir = "resources";
+        Isolate(() =>
+        {
+            TestResource.ProjectDir = "/example/project";
+            TestResource.TestResourcesRelativeDir = "resources";
 
-        Assert.Equal("/example/project/resources", TestResource.TestResourcesDir);
+            Assert.Equal("/example/project/resources", TestResource.TestResourcesDir);
+        });
     }
 
     [Fact]
     public void GetTestResource_When_NonExistent_Throws_Exception()
     {
-        TestResource.ProjectDir = "/example/project";
+        Isolate(() =>
+        {
+            TestResource.ProjectDir = "/example/project";
 
-        var exception = Assert.Throws<DirectoryNotFoundException>(() => TestResource.GetTestResource("non-existent"));
+            var exception = Assert.Throws<DirectoryNotFoundException>(() => TestResource.GetTestResource("non-existent"));
 
-        Assert.Equal("Test resource directory not found: /example/project/TestResources/non-existent", exception.Message);
+            Assert.Equal("Test resource directory not found: /example/project/TestResources/non-existent", exception.Message);
+        });
     }
 
     [Fact]
@@ -69,5 +75,21 @@ public class TestResourceTests
         var testResources = TestResource.GetTestResources();
 
         Assert.NotEmpty(testResources);
+    }
+
+    private static void Isolate(Action action)
+    {
+        var projectDir = TestResource.ProjectDir;
+        var testResourcesRelativeDir = TestResource.TestResourcesRelativeDir;
+
+        try
+        {
+            action();
+        }
+        finally
+        {
+            TestResource.ProjectDir = projectDir;
+            TestResource.TestResourcesRelativeDir = testResourcesRelativeDir;
+        }
     }
 }
