@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Boid.SourceGenerator.Testing;
@@ -75,6 +74,7 @@ public record TestState
 
     public static TestState FromResource(TestResource resource)
     {
+        ArgumentNullException.ThrowIfNull(resource);
         return new TestState
         {
             Sources = resource.Sources,

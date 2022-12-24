@@ -1,10 +1,9 @@
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 
 namespace Boid.SourceGenerator.Testing;
 
-internal partial class AnalyzerConfigOptionsProvider : global::Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider
+internal sealed partial class AnalyzerConfigOptionsProvider : global::Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider
 {
     private readonly Dictionary<string, AnalyzerConfigOptions> _options = new();
     private readonly AnalyzerConfigOptions _globalOptions = new();

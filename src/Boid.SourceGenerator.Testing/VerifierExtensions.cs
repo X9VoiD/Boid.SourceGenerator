@@ -41,10 +41,10 @@ internal static class VerifierExtensions
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine($"Expected no diagnostics, but found {errors.Length} in {context}:");
+            sb.AppendLine(null, $"Expected no diagnostics, but found {errors.Length} in {context}:");
 
             foreach (var d in errors)
-                sb.AppendLine($"    {d}");
+                sb.AppendLine(null, $"    {d}");
 
             verifier.Fail(sb.ToString());
         }

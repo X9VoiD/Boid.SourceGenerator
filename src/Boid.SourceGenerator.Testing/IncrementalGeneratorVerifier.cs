@@ -50,13 +50,14 @@ public partial class IncrementalGeneratorVerifier<TSourceGenerator, TVerifier>
 
     public async Task RunIncrementalAsync(params TestState[] incrementalStates)
     {
+        ArgumentNullException.ThrowIfNull(incrementalStates);
         TestState = incrementalStates[0];
 
         IncrementalRun? incrementalRun = null;
 
         foreach (var state in incrementalStates)
         {
-            incrementalRun = await RunIncrementalAsync(incrementalRun?.ApplyIncrementalChange(state));
+            incrementalRun = await RunIncrementalAsync(incrementalRun?.ApplyIncrementalChange(state)).ConfigureAwait(false);
         }
     }
 

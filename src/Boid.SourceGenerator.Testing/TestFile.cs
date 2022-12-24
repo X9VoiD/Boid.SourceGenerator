@@ -17,5 +17,9 @@ public class TestFile
         content = Content;
     }
 
-    public static implicit operator (string, string)(TestFile file) => (file.HintPath, file.Content);
+    public static (string, string) ToValueTuple(TestFile file)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+        return (file.HintPath, file.Content);
+    }
 }

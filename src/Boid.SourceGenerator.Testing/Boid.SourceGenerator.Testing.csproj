@@ -4,7 +4,32 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <AnalysisMode>All</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+
+  <PropertyGroup Label="Nuget Properties">
+    <PackageId>Boid.SourceGenerator.Testing</PackageId>
+    <Description>Test incremental generators with ease!</Description>
+    <Authors>X9VoiD</Authors>
+    <PackageTags>source-generator;unit-testing;</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/X9VoiD/Boid.SourceGenerator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadMeFile>README.md</PackageReadMeFile>
+  </PropertyGroup>
+
+  <PropertyGroup Label="SourceLink Properties">
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup Label="SourceLink">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+  </ItemGroup>
 
   <ItemGroup Label="Dependencies">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />

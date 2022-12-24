@@ -44,5 +44,9 @@ public class AnalyzerConfigOptionsFile : IEquatable<AnalyzerConfigOptionsFile>
         return !Equals(left, right);
     }
 
-    public static implicit operator (string, string)(AnalyzerConfigOptionsFile file) => (file._hintPath, file._content);
+    public static (string, string) ToValueTuple(AnalyzerConfigOptionsFile file)
+    {
+        ArgumentNullException.ThrowIfNull(file);
+        return (file._hintPath, file._content);
+    }
 }

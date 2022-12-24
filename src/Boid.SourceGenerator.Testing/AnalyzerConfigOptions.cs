@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Boid.SourceGenerator.Testing;
 
-internal class AnalyzerConfigOptions : global::Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions
+internal sealed class AnalyzerConfigOptions : global::Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions
 {
     private readonly Dictionary<string, string> _options = new();
 

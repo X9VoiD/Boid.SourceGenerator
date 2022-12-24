@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Boid.SourceGenerator.Testing;
 
-internal class IncrementalCompilation
+internal sealed class IncrementalCompilation
 {
     private readonly ImmutableDictionary<string, SyntaxTree> _sources = ImmutableDictionary<string, SyntaxTree>.Empty;
 
