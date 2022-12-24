@@ -15,6 +15,11 @@ public class TestResource
     public ImmutableArray<TestFile> AdditionalText { get; }
     public ImmutableArray<AnalyzerConfigOptionsFile> AnalyzerConfigOptions { get; }
 
+    public bool IsEmpty => Sources.IsEmpty
+        && Generated.IsEmpty
+        && AdditionalText.IsEmpty
+        && AnalyzerConfigOptions.IsEmpty;
+
     public TestResource(
         string name,
         ImmutableArray<TestFile> sources,

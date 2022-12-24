@@ -75,6 +75,10 @@ public record TestState
     public static TestState FromResource(TestResource resource)
     {
         ArgumentNullException.ThrowIfNull(resource);
+
+        if (resource.IsEmpty)
+            throw new ArgumentException("Cannot create TestState from empty TestResource.", nameof(resource));
+
         return new TestState
         {
             Sources = resource.Sources,
