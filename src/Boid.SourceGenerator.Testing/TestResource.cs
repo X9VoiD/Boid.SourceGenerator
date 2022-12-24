@@ -6,7 +6,7 @@ public class TestResource
 {
     public static string ProjectDir { get; set; } = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
     public static string TestResourcesRelativeDir { get; set; } = "TestResources";
-    public static string TestResourcesDir { get; } = Path.Combine(ProjectDir, TestResourcesRelativeDir);
+    public static string TestResourcesDir => Path.Combine(ProjectDir, TestResourcesRelativeDir);
 
     public string Name { get; }
 
