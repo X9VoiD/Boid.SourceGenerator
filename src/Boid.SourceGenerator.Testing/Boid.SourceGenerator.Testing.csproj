@@ -20,6 +20,10 @@
     <PackageReadMeFile>README.md</PackageReadMeFile>
   </PropertyGroup>
 
+  <ItemGroup Label="Nuget Packaging">
+    <None Include="../../README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
   <PropertyGroup Label="SourceLink Properties">
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
