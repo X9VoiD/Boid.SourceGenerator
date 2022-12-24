@@ -18,10 +18,11 @@
     <RepositoryUrl>https://github.com/X9VoiD/Boid.SourceGenerator</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadMeFile>README.md</PackageReadMeFile>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup Label="Nuget Packaging">
-    <None Include="../../README.md" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)/README.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <PropertyGroup Label="SourceLink Properties">
