@@ -20,5 +20,106 @@ Add the package `Boid.SourceGenerator.Testing` to your test project.
 > Refer to [NuGet](https://www.nuget.org/packages/Boid.SourceGenerator.Testing)
 > for the latest version.
 
+And then add either of the following depending on the testing framework you use:
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Microsoft.CodeAnalysis.Testing.Verifiers.MSTest" Version="0.1.0" />
+  <PackageReference Include="Microsoft.CodeAnalysis.Testing.Verifiers.XUnit" Version="0.1.0" />
+  <PackageReference Include="Microsoft.CodeAnalysis.Testing.Verifiers.NUnit" Version="0.1.0" />
+</ItemGroup>
+```
+
 ### Setup
 
+Decide on a folder to store the test files to assert against. This is `<ProjectDirectory>/TestResources`
+by default, but can be changed by setting the `TestResource.RelativeDirectory` property.
+
+```cs
+// Sets the directory to search for test resources to <ProjectDirectory>/TestFiles
+TestResource.RelativeDirectory = "TestFiles";
+```
+
+The structure of the test resource directory should be as follows:
+
+```
+TestResources
+├── <TestName>
+│   ├── Sources
+│   │   ├── <Source1>.cs
+│   │   ├── <Source2>.cs
+│   │   └── ...
+│   ├── Generated
+│   │   ├── <Generated1>.cs
+│   │   ├── <Generated2>.cs
+│   │   └── ...
+│   ├── AdditionalText
+│   │   ├── <AdditionalText1>
+│   │   ├── <AdditionalText2>
+│   │   └── ...
+│   └── AnalyzerConfigOptions
+│       ├── global.editorconfig
+│       ├── <AnalyzerConfigOptions1>.editorconfig
+│       ├── <AnalyzerConfigOptions2>.editorconfig
+│       └── ...
+└── ...
+```
+
+where:
+
+- `<TestName>` is the name of the test.
+- `<Source*>.cs` is the source files that will be fed to the generator.
+- `<Generated*>.cs` is the expected generated files.
+- `<AdditionalText*>` is the additional text files returned by an `AdditionalTextsProvider`.
+- `global.editorconfig` will dictate the output of `AnalyzerConfigOptionsProvider.GlobalOptions`.
+- `<AnalyzerConfigOptions*>` is the analyzer config options to be associated to
+  an additional text of the same filename.
+
+> More about the analyzer config options in [Analyzer Config Options]()
+> section.
+
+### Usage
+
+The following examples will assume that the testing framework is `Xunit`.
+
+#### Single state testing
+
+This is the simplest way to test an incremental generator with multiple test
+cases to go through.
+
+```cs
+public class GeneratorTest
+{
+    [Theory]
+    [InlineData("Test1")]
+    [InlineData("Test2")]
+    public async Task SingleStateTest(string testName)
+    {
+        await new IncrementalGeneratorVerifier<MyIncrementalGenerator, XUnitVerifier>()
+        {
+            TestState = new TestState(testName)
+        }.RunAsync();
+    }
+}
+```
+
+#### Multi state testing
+
+This allows one to test how the incremental generator behaves when doing incremental
+changes to the source files, additional texts, or analyzer config options.
+
+```cs
+public class GeneratorTest
+{
+    [Fact]
+    public async Task Generator_Behaves_Well_On_Code_Edits()
+    {
+        await new IncrementalGeneratorVerifier<MyIncrementalGenerator, XUnitVerifier>()
+            .RunIncrementalAsync(
+                new TestState("Test1"),
+                new TestState("Test2"),
+                new TestState("Test3")
+            );
+    }
+}
+```

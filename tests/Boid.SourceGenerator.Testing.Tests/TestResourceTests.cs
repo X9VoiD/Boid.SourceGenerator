@@ -5,19 +5,19 @@ public class TestResourceTests
     [Fact]
     public void ProjectDir_Returns_ProjectDir()
     {
-        Assert.Equal("Boid.SourceGenerator.Testing.Tests", Path.GetFileName(TestResource.ProjectDir));
+        Assert.Equal("Boid.SourceGenerator.Testing.Tests", Path.GetFileName(TestResource.ProjectDirectory));
     }
 
     [Fact]
     public void TestResourcesRelativeDir_Returns_Default()
     {
-        Assert.Equal("TestResources", TestResource.TestResourcesRelativeDir);
+        Assert.Equal("TestResources", TestResource.RelativeDirectory);
     }
 
     [Fact]
     public void TestResourcesDir_Returns_TestResourcesRelativeDir_By_Default()
     {
-        Assert.Equal("TestResources", Path.GetRelativePath(TestResource.ProjectDir, TestResource.TestResourcesDir));
+        Assert.Equal("TestResources", Path.GetRelativePath(TestResource.ProjectDirectory, TestResource.ResourcesDirectory));
     }
 
     [Fact]
@@ -25,10 +25,10 @@ public class TestResourceTests
     {
         Isolate(() =>
         {
-            TestResource.ProjectDir = "/example/project";
-            TestResource.TestResourcesRelativeDir = "resources";
+            TestResource.ProjectDirectory = "/example/project";
+            TestResource.RelativeDirectory = "resources";
 
-            Assert.Equal("/example/project/resources", TestResource.TestResourcesDir);
+            Assert.Equal("/example/project/resources", TestResource.ResourcesDirectory);
         });
     }
 
@@ -37,7 +37,7 @@ public class TestResourceTests
     {
         Isolate(() =>
         {
-            TestResource.ProjectDir = "/example/project";
+            TestResource.ProjectDirectory = "/example/project";
 
             var exception = Assert.Throws<DirectoryNotFoundException>(() => TestResource.GetTestResource("non-existent"));
 
@@ -79,8 +79,8 @@ public class TestResourceTests
 
     private static void Isolate(Action action)
     {
-        var projectDir = TestResource.ProjectDir;
-        var testResourcesRelativeDir = TestResource.TestResourcesRelativeDir;
+        var projectDir = TestResource.ProjectDirectory;
+        var testResourcesRelativeDir = TestResource.RelativeDirectory;
 
         try
         {
@@ -88,8 +88,8 @@ public class TestResourceTests
         }
         finally
         {
-            TestResource.ProjectDir = projectDir;
-            TestResource.TestResourcesRelativeDir = testResourcesRelativeDir;
+            TestResource.ProjectDirectory = projectDir;
+            TestResource.RelativeDirectory = testResourcesRelativeDir;
         }
     }
 }

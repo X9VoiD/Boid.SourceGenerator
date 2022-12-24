@@ -4,9 +4,9 @@ namespace Boid.SourceGenerator.Testing;
 
 public class TestResource
 {
-    public static string ProjectDir { get; set; } = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
-    public static string TestResourcesRelativeDir { get; set; } = "TestResources";
-    public static string TestResourcesDir => Path.Combine(ProjectDir, TestResourcesRelativeDir);
+    public static string ProjectDirectory { get; set; } = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
+    public static string RelativeDirectory { get; set; } = "TestResources";
+    public static string ResourcesDirectory => Path.Combine(ProjectDirectory, RelativeDirectory);
 
     public string Name { get; }
 
@@ -36,7 +36,7 @@ public class TestResource
 
     public static ImmutableArray<TestResource> GetTestResources()
     {
-        var testResourcesDir = TestResourcesDir;
+        var testResourcesDir = ResourcesDirectory;
         if (!Directory.Exists(testResourcesDir))
             throw new DirectoryNotFoundException($"Test resources directory not found: {testResourcesDir}");
 
@@ -47,16 +47,16 @@ public class TestResource
 
     public static TestResource GetTestResource(string name)
     {
-        var resourceDir = Path.Combine(TestResourcesDir, name);
+        var resourceDir = Path.Combine(ResourcesDirectory, name);
         if (!Directory.Exists(resourceDir))
             throw new DirectoryNotFoundException($"Test resource directory not found: {resourceDir}");
 
         var sources = GetFiles(Path.Combine(resourceDir, "Sources"));
         var generated = GetFiles(Path.Combine(resourceDir, "Generated"));
-        var additionalFiles = GetFiles(Path.Combine(resourceDir, "AdditionalText"));
+        var additionalTexts = GetFiles(Path.Combine(resourceDir, "AdditionalText"));
         var analyzerConfigOptions = GetAnalyzerFiles(Path.Combine(resourceDir, "AnalyzerConfigOptions"));
 
-        return new TestResource(name, sources, generated, additionalFiles, analyzerConfigOptions);
+        return new TestResource(name, sources, generated, additionalTexts, analyzerConfigOptions);
     }
 
     private static ImmutableArray<TestFile> GetFiles(string path)
