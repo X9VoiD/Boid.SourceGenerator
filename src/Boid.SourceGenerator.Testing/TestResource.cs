@@ -61,15 +61,19 @@ public class TestResource
 
     private static ImmutableArray<TestFile> GetFiles(string path)
     {
-        return Directory.EnumerateFiles(path, "*.cs")
-            .Select(f => new TestFile(Path.GetRelativePath(path, f), File.ReadAllText(f)))
-            .ToImmutableArray();
+        return Directory.Exists(path)
+            ? Directory.EnumerateFiles(path, "*.cs")
+                .Select(f => new TestFile(Path.GetRelativePath(path, f), File.ReadAllText(f)))
+                .ToImmutableArray()
+            : ImmutableArray<TestFile>.Empty;
     }
 
     private static ImmutableArray<AnalyzerConfigOptionsFile> GetAnalyzerFiles(string path)
     {
-        return Directory.EnumerateFiles(path, "*.cs")
-            .Select(f => new AnalyzerConfigOptionsFile(Path.GetRelativePath(path, f), File.ReadAllText(f)))
-            .ToImmutableArray();
+        return Directory.Exists(path)
+            ? Directory.EnumerateFiles(path, "*.cs")
+                .Select(f => new AnalyzerConfigOptionsFile(Path.GetRelativePath(path, f), File.ReadAllText(f)))
+                .ToImmutableArray()
+            : ImmutableArray<AnalyzerConfigOptionsFile>.Empty;
     }
 }
