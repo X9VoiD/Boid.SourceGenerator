@@ -32,7 +32,7 @@ internal sealed partial class AnalyzerConfigOptionsProvider : global::Microsoft.
 
     public void From(string filePath, string content)
     {
-        filePath = Path.GetFileName(filePath);
+        filePath = EditorConfigExt().Match(filePath).Groups["fileName"].Captures[0].Value;
 
         var matches = (IEnumerable<Match>)ValuePair().Matches(content)!;
         if (filePath == "global")
@@ -97,6 +97,9 @@ internal sealed partial class AnalyzerConfigOptionsProvider : global::Microsoft.
     {
         _globalOptions.Add(key, value);
     }
+
+    [GeneratedRegex(@"^(?<fileName>.*)\.editorconfig$", RegexOptions.NonBacktracking)]
+    private static partial Regex EditorConfigExt();
 
     [GeneratedRegex(@"^(?<key>(?:\w|_|-|\.)+) = (?<value>(?:\w|_|-|\.)+)$", RegexOptions.Multiline | RegexOptions.NonBacktracking)]
     private static partial Regex ValuePair();
