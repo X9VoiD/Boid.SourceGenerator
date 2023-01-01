@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -47,6 +48,17 @@ internal static class VerifierExtensions
                 sb.AppendLine(null, $"    {d}");
 
             verifier.Fail(sb.ToString());
+        }
+    }
+
+    public static void VerifyObservers(this IVerifier verifier, TestState testState, ImmutableArray<IncrementalRunObserver> observers)
+    {
+        if (testState.TestBehaviour.HasFlag(TestBehaviour.SkipObserverVerification))
+            return;
+
+        foreach (var observer in observers)
+        {
+            observer.RunVerifiers(verifier);
         }
     }
 }

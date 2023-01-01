@@ -1,5 +1,6 @@
+using System.Collections.Immutable;
+using Boid.SourceGenerator.Testing.Tests.Generators;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
-using SampleGenerators;
 using Xunit.Sdk;
 
 namespace Boid.SourceGenerator.Testing.Tests;
@@ -50,5 +51,25 @@ public class IncrementalGeneratorVerifierTests
         {
             TestState = new TestState("Json")
         }.RunAsync();
+    }
+
+    [Fact]
+    public async Task Verifier_Verifies_Observers()
+    {
+        var observerRan = false;
+        await new IncrementalGeneratorVerifier<StaticCodeGenerator, XUnitVerifier>()
+        {
+            TestState = new TestState("GeneratedClass"),
+            Observers = ImmutableArray.Create<IncrementalRunObserver>(
+                new Counter(nameof(StaticCodeGenerator))
+                    .AddVerifier((observer, verifier) =>
+                    {
+                        observerRan = true;
+                        verifier.Equal(0, observer.RunNumber);
+                    })
+            )
+        }.RunAsync();
+
+        Assert.True(observerRan);
     }
 }

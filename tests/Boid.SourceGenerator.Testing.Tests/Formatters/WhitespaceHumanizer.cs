@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace SampleGenerators.Formatters;
+namespace Boid.SourceGenerator.Testing.Tests.Formatters;
 
 public class WhitespaceHumanizer : CSharpSyntaxRewriter
 {
@@ -141,7 +141,7 @@ public class WhitespaceHumanizer : CSharpSyntaxRewriter
     private static bool TryGetIdentation(SyntaxNode node, out SyntaxTrivia indentation)
     {
         if (node.HasLeadingTrivia
-            && node.GetLeadingTrivia().LastOrDefault() is SyntaxTrivia trivia
+            && node.GetLeadingTrivia()[^1] is SyntaxTrivia trivia
             && trivia.IsKind(SyntaxKind.WhitespaceTrivia))
         {
             indentation = trivia;

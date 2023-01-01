@@ -8,20 +8,22 @@ namespace Boid.SourceGenerator.Testing;
 public sealed class IncrementalRun
 {
     internal int RunNumber { get; }
+    internal IIncrementalGenerator Generator { get; }
     internal IVerifier Verifier { get; }
     internal TestState TestState { get; }
     internal ImmutableArray<AdditionalText> AdditionalTexts { get; }
     internal IncrementalCompilation PreGeneratorCompilation { get; }
     internal GeneratorDriver Driver { get; }
-    internal ImmutableArray<IIncrementalRunObserver> Observers { get; }
+    internal ImmutableArray<IncrementalRunObserver> Observers { get; }
 
     internal IncrementalRun(
         IVerifier verifier,
         IIncrementalGenerator sourceGen,
         TestState testState,
         ImmutableArray<MetadataReference> references,
-        ImmutableArray<IIncrementalRunObserver> observers)
+        ImmutableArray<IncrementalRunObserver> observers)
     {
+        Generator = sourceGen;
         Verifier = verifier;
         TestState = testState;
         PreGeneratorCompilation = CreateCompilation(testState, references);
@@ -32,14 +34,16 @@ public sealed class IncrementalRun
 
     private IncrementalRun(
         int runNumber,
+        IIncrementalGenerator sourceGen,
         IVerifier verifier,
         TestState testState,
         IncrementalCompilation preGeneratorCompilation,
         GeneratorDriver driver,
         ImmutableArray<AdditionalText> additionalTexts,
-        ImmutableArray<IIncrementalRunObserver> observers)
+        ImmutableArray<IncrementalRunObserver> observers)
     {
         RunNumber = runNumber;
+        Generator = sourceGen;
         Verifier = verifier;
         TestState = testState;
         PreGeneratorCompilation = preGeneratorCompilation;
@@ -50,7 +54,7 @@ public sealed class IncrementalRun
 
     internal IncrementalRun RunGenerator()
     {
-        Observers.ForEach(o => o.OnRunStart(RunNumber));
+        Observers.ForEach(o => o.OnRunStartInternal(RunNumber));
         var newDriver = Driver.RunGeneratorsAndUpdateCompilation(PreGeneratorCompilation.Compilation, out var outputCompilation, out var diagnostics);
 
         var runResult = newDriver.GetRunResult();
@@ -62,10 +66,10 @@ public sealed class IncrementalRun
         verifier.VerifyGeneratedSources(TestState, runResult);
         verifier.VerifyZeroDiagnostics(TestState, generatorDiagnostics, "generator", TestBehaviour.SkipGeneratorDiagnostic);
         verifier.VerifyZeroDiagnostics(TestState, compilationDiagnostics, "compilation", TestBehaviour.SkipCompilationDiagnostic);
-        Observers.ForEach(o => o.OnRunEnd(RunNumber));
+        Observers.ForEach(o => o.OnRunEndInternal());
 
         // Pass the original verifier
-        return new IncrementalRun(RunNumber, Verifier, TestState, PreGeneratorCompilation, newDriver, AdditionalTexts, Observers);
+        return new IncrementalRun(RunNumber, Generator, Verifier, TestState, PreGeneratorCompilation, newDriver, AdditionalTexts, Observers);
     }
 
     internal IncrementalRun ApplyIncrementalChange(TestState newState)
@@ -98,7 +102,7 @@ public sealed class IncrementalRun
         }
 
         // Increment run number and pass updated run state
-        return new IncrementalRun(RunNumber + 1, Verifier, newState, newCompilation, newDriver, newAdditionalTexts, Observers);
+        return new IncrementalRun(RunNumber + 1, Generator, Verifier, newState, newCompilation, newDriver, newAdditionalTexts, Observers);
     }
 
     private static IncrementalCompilation CreateCompilation(TestState testState, ImmutableArray<MetadataReference> references)

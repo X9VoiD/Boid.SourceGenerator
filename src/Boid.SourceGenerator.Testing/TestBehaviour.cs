@@ -7,4 +7,5 @@ public enum TestBehaviour
     SkipGeneratedSource = 1,
     SkipCompilationDiagnostic = 2,
     SkipGeneratorDiagnostic = 4,
+    SkipObserverVerification = 8,
 }

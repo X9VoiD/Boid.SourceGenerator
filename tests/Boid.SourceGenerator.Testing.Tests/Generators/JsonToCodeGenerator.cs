@@ -1,13 +1,13 @@
 using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json;
+using Boid.SourceGenerator.Testing.Tests.Formatters;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using SampleGenerators.Formatters;
 
-namespace SampleGenerators;
+namespace Boid.SourceGenerator.Testing.Tests.Generators;
 
 // Adds a 'Person.g.cs' file to the compilation with a 'Person' class in it.
 // Then reads all json files tagged with "Person" property:
@@ -19,7 +19,6 @@ namespace SampleGenerators;
 // into 'Person' objects. These are then added to a static 'People' property
 // as an array of 'Person'.
 
-[Generator]
 public class JsonToCodeGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)

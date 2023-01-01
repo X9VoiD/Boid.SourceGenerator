@@ -1,8 +1,7 @@
 using Microsoft.CodeAnalysis;
 
-namespace SampleGenerators;
+namespace Boid.SourceGenerator.Testing.Tests.Generators;
 
-[Generator]
 public class ConditionalStaticCodeGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
