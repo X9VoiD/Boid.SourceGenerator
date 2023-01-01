@@ -30,7 +30,7 @@ jobs:
         env:
           project: ${{ matrix.project }}
         run: |
-          read -ra options <<< "--configuration Release -p:PublishTrimmed=false --no-self-contained -p:SourceRevisionId=$(git rev-parse --short HEAD)"
+          read -ra options <<< "--configuration Release -p:PublishTrimmed=false -p:SourceRevisionId=$(git rev-parse --short HEAD)"
           dotnet pack "src/$project" "${options[@]}" -o "build/$project"
 
       - uses: actions/upload-artifact@master
