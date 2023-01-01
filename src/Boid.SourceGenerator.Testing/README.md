@@ -184,7 +184,8 @@ For example, the following MSBuild items:
 </ItemGroup>
 ```
 
-is equivalent to `MyAdditionalText.txt.editorconfig`:
+is equivalent to an `editorconfig` file named `MyAdditionalText.txt.editorconfig`
+with the following content:
 
 ```
 build_metadata.AdditionalFiles.MyMetadata = MyValue
