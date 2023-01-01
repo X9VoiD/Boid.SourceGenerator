@@ -75,7 +75,7 @@ where:
 - `<AnalyzerConfigOptions*>` is the analyzer config options to be associated to
   an additional text of the same filename.
 
-> More about the analyzer config options in [Analyzer Config Options]()
+> More about the analyzer config options in [MSBuild properties and metadata](#msbuild-properties-and-metadata)
 > section.
 
 ### Usage
@@ -122,4 +122,70 @@ public class GeneratorTest
             );
     }
 }
+```
+
+### MSBuild properties and metadata
+
+To test analyzer config options, create an `editorconfig` file with the same name
+as the additional text file. For example, if the additional text file is named
+`MyAdditionalText.txt`, then the analyzer config options file should be named
+`MyAdditionalText.txt.editorconfig`.
+
+The content of the `editorconfig` file should be in the following format:
+
+```
+<AnalyzerConfigOption1> = <Value1>
+<AnalyzerConfigOption2> = <Value2>
+...
+```
+
+For example:
+
+```
+build_property.MyProperty = MyValue
+build_property.MyOtherProperty = MyOtherValue
+```
+
+#### Compiler-visible properties
+
+To add compiler-visible properties, prefix the property name with `build_property`.
+
+Compiler-visible properties refers to the MSBuild properties that are explicitly
+made visible to the generator via the `CompilerVisibleProperty` and `CompilerVisibleItemMetadata`
+item groups.
+
+For example, the `editorconfig` above is equivalent to the following MSBuild properties:
+
+```xml
+<PropertyGroup>
+  <MyProperty>MyValue</MyProperty>
+  <MyOtherProperty>MyOtherValue</MyOtherProperty>
+</PropertyGroup>
+```
+
+and the following `CompilerVisibleProperty` item group:
+
+```xml
+<ItemGroup>
+  <CompilerVisibleProperty Include="MyProperty" />
+  <CompilerVisibleProperty Include="MyOtherProperty" />
+</ItemGroup>
+```
+
+#### Additional Text metadata
+
+To associate metadata to an additional text, use the prefix `build_metadata.AdditionalFiles`.
+
+For example, the following MSBuild items:
+
+```xml
+<ItemGroup>
+  <AdditionalFiles Include="MyAdditionalText.txt" MyMetadata="MyValue" />
+</ItemGroup>
+```
+
+is equivalent to `MyAdditionalText.txt.editorconfig`:
+
+```
+build_metadata.AdditionalFiles.MyMetadata = MyValue
 ```

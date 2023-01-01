@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Boid.SourceGenerator.Testing\Boid.SourceGenerator.Testing.csproj" />
+    <ProjectReference Include="..\Boid.SourceGenerator.Testing\Boid.SourceGenerator.Testing.csproj" />
     <Compile Remove="TestResources\**\*.cs" />
   </ItemGroup>
 
